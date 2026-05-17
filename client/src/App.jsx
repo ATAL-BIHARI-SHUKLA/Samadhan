@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { AnimatePresence } from "framer-motion";
@@ -9,14 +9,19 @@ import { AppProvider } from "./context/AppContext";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 import ChatBox from "./components/ChatBox";
-import Home from "./pages/Home";
-import ReportIssue from "./pages/ReportIssue";
-import IssuesMap from "./pages/IssuesMap";
-import IssueDetails from "./pages/IssueDetails";
-import WorkerDashboard from "./pages/WorkerDashboard";
-import AdminDashboard from "./pages/AdminDashboard";
-import CitizenDashboard from "./pages/CitizenDashboard";
-import Auth from "./pages/Auth";
+
+const Home = React.lazy(() => import("./pages/Home"));
+const ReportIssue = React.lazy(() => import("./pages/ReportIssue"));
+const IssuesMap = React.lazy(() => import("./pages/IssuesMap"));
+const IssueDetails = React.lazy(() => import("./pages/IssueDetails"));
+const WorkerDashboard = React.lazy(() => import("./pages/WorkerDashboard"));
+const AdminDashboard = React.lazy(() => import("./pages/AdminDashboard"));
+const CitizenDashboard = React.lazy(() => import("./pages/CitizenDashboard"));
+const Auth = React.lazy(() => import("./pages/Auth"));
+
+const LoadingFallback = () => (
+  <div className="p-10 text-center text-sm text-gray-600">Loading...</div>
+);
 
 const ProtectedRoute = ({ children, requiredRole }) => {
   const { isAuthenticated, authReady } = useAuth();
@@ -68,38 +73,40 @@ function App() {
 
         <main>
           <AnimatePresence mode="wait">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/report" element={<ReportIssue />} />
-              <Route path="/map" element={<IssuesMap />} />
-              <Route path="/issue/:id" element={<IssueDetails />} />
-              <Route
-                path="/citizen-dashboard"
-                element={
-                  <ProtectedRoute>
-                    <CitizenDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/worker-dashboard"
-                element={
-                  <ProtectedRoute requiredRole="worker">
-                    <WorkerDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin-dashboard"
-                element={
-                  <ProtectedRoute requiredRole="admin">
-                    <AdminDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="*" element={<Navigate to="/" />} />
-            </Routes>
+            <Suspense fallback={<LoadingFallback />}>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/report" element={<ReportIssue />} />
+                <Route path="/map" element={<IssuesMap />} />
+                <Route path="/issue/:id" element={<IssueDetails />} />
+                <Route
+                  path="/citizen-dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <CitizenDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/worker-dashboard"
+                  element={
+                    <ProtectedRoute requiredRole="worker">
+                      <WorkerDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin-dashboard"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="*" element={<Navigate to="/" />} />
+              </Routes>
+            </Suspense>
           </AnimatePresence>
         </main>
 
